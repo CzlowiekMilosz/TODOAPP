@@ -1,0 +1,30 @@
+name: Fast-track CI for TODOAPP
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build-and-run:
+    runs-on: ubuntu-latest
+
+    steps:
+    # 1. Pobranie repozytorium
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    # 2. Build Dockera
+    - name: Build Docker image
+      run: docker build -t todoapp .
+
+    # 3. Run Docker container in background
+    - name: Run container in background
+      run: docker run -d --name todo_test -p 5000:5000 todoapp
+
+    # 4. Run client inside container to test server
+    - name: Test server with client
+      run: docker exec todo_test python client.py
+
+    # 5. Stop and remove container
+    - name: Stop container
+      run: docker rm -f todo_test
