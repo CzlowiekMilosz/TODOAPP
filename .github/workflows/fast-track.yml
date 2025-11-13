@@ -1,30 +1,48 @@
-name: Fast-track CI for TODOAPP
+name: CI/CD Fast-Track
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
 
 jobs:
-  build-and-run:
+  build-test-deploy:
     runs-on: ubuntu-latest
 
     steps:
-    # 1. Pobranie repozytorium
     - name: Checkout repository
       uses: actions/checkout@v3
 
-    # 2. Build Dockera
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+
     - name: Build Docker image
       run: docker build -t todoapp .
 
-    # 3. Run Docker container in background
     - name: Run container in background
       run: docker run -d --name todo_test -p 5000:5000 todoapp
 
-    # 4. Run client inside container to test server
-    - name: Test server with client
+    - name: Wait for server to start
+      run: sleep 5
+
+    - name: Run client.py to test server
       run: docker exec todo_test python client.py
 
-    # 5. Stop and remove container
-    - name: Stop container
+    - name: Stop and remove container
       run: docker rm -f todo_test
+
+    - name: Install Railway CLI
+      run: curl -sL https://railway.app/cli | sh
+
+    - name: Login to Railway
+      env:
+        RAILWAY_API_KEY: ${{ secrets.RAILWAY_API_KEY }}
+      run: railway login --apiKey $RAILWAY_API_KEY
+
+    - name: Deploy to Railway
+      run: railway up --detach
