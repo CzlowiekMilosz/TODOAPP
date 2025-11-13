@@ -1,0 +1,17 @@
+# rename the file
+mv /workspaces/TODOAPP/.gitgnore /workspaces/TODOAPP/.gitignore
+
+# or create/overwrite .gitignore with the desired contents
+cat > /workspaces/TODOAPP/.gitignore <<'EOF'
+__pycache__/
+*.pyc
+*.db
+.env
+.vscode/
+.venv/
+EOF
+
+
+cd /workspaces/TODOAPP
+git add .gitignore
+git commit -m "Add .gitignore"
