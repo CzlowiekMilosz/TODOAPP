@@ -10,39 +10,48 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
+      # 1. Checkout
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.11'
+      # 2. Build Docker
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
 
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v2
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
 
-    - name: Build Docker image
-      run: docker build -t todoapp .
+      - name: Build Docker image
+        run: docker build -t todoapp .
 
-    - name: Run container in background
-      run: docker run -d --name todo_test -p 5000:5000 todoapp
+      # 3. Run container
+      - name: Run container in background
+        run: docker run -d --name todo_test -p 5000:5000 todoapp
 
-    - name: Wait for server to start
-      run: sleep 5
+      - name: Wait for server to start
+        run: sleep 5
 
-    - name: Run client.py to test server
-      run: docker exec todo_test python client.py
+      # 4. Test client
+      - name: Run client.py to test server
+        run: docker exec todo_test python client.py
 
-    - name: Stop and remove container
-      run: docker rm -f todo_test
+      # 5. Stop container
+      - name: Stop and remove container
+        run: docker rm -f todo_test
 
-    - name: Install Railway CLI
-      run: curl -sL https://railway.app/cli | sh
+      # 6. Install Railway CLI
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
 
-    - name: Login to Railway
-      env:
-        RAILWAY_API_KEY: ${{ secrets.RAILWAY_API_KEY }}
-      run: railway login --apiKey $RAILWAY_API_KEY
+      - name: Install Railway CLI
+        run: npm install -g @railway/cli
 
-    - name: Deploy to Railway
-      run: railway up --detach
+      # 7. Deploy to Railway
+      - name: Deploy to Railway
+        env:
+          RAILWAY_API_KEY: ${{ secrets.RAILWAY_API_KEY }}
+        run: railway up --detach --service todoapp
