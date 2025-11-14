@@ -2,8 +2,8 @@ import requests
 
 def test_server():
     try:
-        # Change URL to host port mapped to container
-        r = requests.get("http://127.0.0.1:5002/")
+        # Connect to the server on port 5000 (app exposes 5000)
+        r = requests.get("http://127.0.0.1:5000/")
         print("Status code:", r.status_code)
         print("Response:", r.json())
     except Exception as e:
