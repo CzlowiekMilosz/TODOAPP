@@ -10,58 +10,45 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Checkout
+      # 1. Checkout repo
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # 2. Build Docker
+      # 2. Set up Python
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.11'
 
+      # 3. Set up Docker Buildx
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
+      # 4. Build Docker image
       - name: Build Docker image
         run: docker build -t todoapp .
 
-      # 3. Run container
+      # 5. Run container in background
       - name: Run container in background
         run: docker run -d --name todo_test -p 5000:5000 todoapp
 
-      - name: Wait for server to start
+      # 6. Wait for server to start
+      - name: Wait for server
         run: sleep 5
 
-      # 4. Test client
+      # 7. Test server with client
       - name: Run client.py to test server
         run: docker exec todo_test python client.py
 
-      # 5. Stop container
+      # 8. Stop and remove container
       - name: Stop and remove container
         run: docker rm -f todo_test
 
-      # 6. Install Railway CLI
-      - name: Install Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 18
-
-      - name: Install Railway CLI
-        run: npm install -g @railway/cli
-
-      # Validate RAILWAY_API_KEY so deploy fails fast with a clear message
-      - name: Validate RAILWAY_API_KEY
-        env:
-          RAILWAY_API_KEY: ${{ secrets.RAILWAY_API_KEY }}
-        run: |
-          if [ -z "$RAILWAY_API_KEY" ]; then
-            echo "ERROR: RAILWAY_API_KEY secret is not set. Add it to Settings → Secrets → Actions."
-            exit 1
-          fi
-
-      # 7. Deploy to Railway
+      # 9. Deploy to Railway
       - name: Deploy to Railway
         env:
           RAILWAY_API_KEY: ${{ secrets.RAILWAY_API_KEY }}
-        run: railway up --detach --service todoapp
+        run: |
+          curl -sL https://railway.app/cli | sh
+          railway login --apiKey $RAILWAY_API_KEY
+          railway up --detach
