@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Checkout the repository
+      # 1. Checkout repository
       - name: Checkout repository
         uses: actions/checkout@v3
 
@@ -32,11 +32,11 @@ jobs:
       - name: Run container in background
         run: docker run -d --name todo_test -p 5000:5000 todoapp
 
-      # 6. Wait a few seconds for Flask server to start
-      - name: Wait for server to start
+      # 6. Wait for server to start
+      - name: Wait for server
         run: sleep 5
 
-      # 7. Run client.py inside container to test server
+      # 7. Run client.py to test server
       - name: Test server with client
         run: docker exec todo_test python client.py
 
@@ -46,18 +46,14 @@ jobs:
 
       # 9. Install Railway CLI
       - name: Install Railway CLI
-        run: |
-          curl -Lo railway.deb https://github.com/railwayapp/cli/releases/latest/download/railway-v4.11.0-amd64.deb
-          sudo dpkg -i railway.deb
+        run: curl -Ls https://railway.app/install.sh | sh
 
       # 10. Login to Railway
       - name: Login to Railway
         env:
-          RAILWAY_API_KEY: ${{ secrets.RAILWAY_API_KEY }}
-        run: railway login --apiKey $RAILWAY_API_KEY
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        run: railway login --token $RAILWAY_TOKEN
 
       # 11. Deploy to Railway
       - name: Deploy to Railway
-        env:
-          RAILWAY_API_KEY: ${{ secrets.RAILWAY_API_KEY }}
         run: railway up --detach
