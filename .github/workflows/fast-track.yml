@@ -33,11 +33,11 @@ jobs:
       run: docker run -d --name todo_test -p 5000:5000 todoapp
 
     # 6. Wait for server to start
-    - name: Wait for server to start
+    - name: Wait for server
       run: sleep 5
 
-    # 7. Run client.py inside container to test server
-    - name: Test server with client
+    # 7. Test server with client
+    - name: Run client.py to test server
       run: docker exec todo_test python client.py
 
     # 8. Stop and remove container
@@ -46,7 +46,11 @@ jobs:
 
     # 9. Install Railway CLI
     - name: Install Railway CLI
-      run: curl -sL https://railway.app/cli | bash
+      run: |
+        curl -Lo railway.tar.gz https://github.com/railwayapp/cli/releases/latest/download/railway-linux-amd64.tar.gz
+        tar -xzf railway.tar.gz
+        chmod +x railway
+        sudo mv railway /usr/local/bin/railway
 
     # 10. Login to Railway
     - name: Login to Railway
@@ -59,3 +63,4 @@ jobs:
       env:
         RAILWAY_API_KEY: ${{ secrets.RAILWAY_API_KEY }}
       run: railway up --detach
+
