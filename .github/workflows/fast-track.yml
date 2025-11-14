@@ -10,57 +10,54 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    # 1. Checkout repository
-    - name: Checkout repository
-      uses: actions/checkout@v3
+      # 1. Checkout the repository
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-    # 2. Set up Python
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.11'
+      # 2. Set up Python
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
 
-    # 3. Set up Docker Buildx
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v2
+      # 3. Set up Docker Buildx
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
 
-    # 4. Build Docker image
-    - name: Build Docker image
-      run: docker build -t todoapp .
+      # 4. Build Docker image
+      - name: Build Docker image
+        run: docker build -t todoapp .
 
-    # 5. Run Docker container in background
-    - name: Run container in background
-      run: docker run -d --name todo_test -p 5000:5000 todoapp
+      # 5. Run Docker container in background
+      - name: Run container in background
+        run: docker run -d --name todo_test -p 5000:5000 todoapp
 
-    # 6. Wait for server to start
-    - name: Wait for server
-      run: sleep 5
+      # 6. Wait a few seconds for Flask server to start
+      - name: Wait for server to start
+        run: sleep 5
 
-    # 7. Test server with client
-    - name: Run client.py to test server
-      run: docker exec todo_test python client.py
+      # 7. Run client.py inside container to test server
+      - name: Test server with client
+        run: docker exec todo_test python client.py
 
-    # 8. Stop and remove container
-    - name: Stop and remove container
-      run: docker rm -f todo_test
+      # 8. Stop and remove container
+      - name: Stop and remove container
+        run: docker rm -f todo_test
 
-    # 9. Install Railway CLI
-    - name: Install Railway CLI
-      run: |
-        curl -Lo railway.tar.gz https://github.com/railwayapp/cli/releases/latest/download/railway-linux-amd64.tar.gz
-        tar -xzf railway.tar.gz
-        chmod +x railway
-        sudo mv railway /usr/local/bin/railway
+      # 9. Install Railway CLI
+      - name: Install Railway CLI
+        run: |
+          curl -Lo railway.deb https://github.com/railwayapp/cli/releases/latest/download/railway-v4.11.0-amd64.deb
+          sudo dpkg -i railway.deb
 
-    # 10. Login to Railway
-    - name: Login to Railway
-      env:
-        RAILWAY_API_KEY: ${{ secrets.RAILWAY_API_KEY }}
-      run: railway login --apiKey $RAILWAY_API_KEY
+      # 10. Login to Railway
+      - name: Login to Railway
+        env:
+          RAILWAY_API_KEY: ${{ secrets.RAILWAY_API_KEY }}
+        run: railway login --apiKey $RAILWAY_API_KEY
 
-    # 11. Deploy to Railway
-    - name: Deploy to Railway
-      env:
-        RAILWAY_API_KEY: ${{ secrets.RAILWAY_API_KEY }}
-      run: railway up --detach
-
+      # 11. Deploy to Railway
+      - name: Deploy to Railway
+        env:
+          RAILWAY_API_KEY: ${{ secrets.RAILWAY_API_KEY }}
+        run: railway up --detach
