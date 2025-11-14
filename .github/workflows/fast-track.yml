@@ -50,6 +50,16 @@ jobs:
       - name: Install Railway CLI
         run: npm install -g @railway/cli
 
+      # Validate RAILWAY_API_KEY so deploy fails fast with a clear message
+      - name: Validate RAILWAY_API_KEY
+        env:
+          RAILWAY_API_KEY: ${{ secrets.RAILWAY_API_KEY }}
+        run: |
+          if [ -z "$RAILWAY_API_KEY" ]; then
+            echo "ERROR: RAILWAY_API_KEY secret is not set. Add it to Settings → Secrets → Actions."
+            exit 1
+          fi
+
       # 7. Deploy to Railway
       - name: Deploy to Railway
         env:
